@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MK Bank Ltd</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.0/Recharts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide-static/0.383.0/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #F7F8FA; }
+  .lucide-icon { display: inline-block; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+
+const { useState, useEffect, useMemo, useCallback } = React;
+const {
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} = Recharts;
+
+/* ============================== simple icon components (SVG, no deps) ============================== */
+function Icon({ name, size = 18, color = "currentColor", style = {}, className = "" }) {
+  const paths = {
+    Landmark: "M3 22h18M6 18v-8M10 18v-8M14 18v-8M18 18v-8M12 2 3 7h18L12 2Z",
+    Search: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.35-4.35",
+    LayoutDashboard: "M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z",
+    LineChartIcon: "M3 3v18h18M7 15l4-6 4 3 5-8",
+    PiggyBank: "M19 9a2 2 0 1 1-2-2c1.1 0 2 .9 2 2ZM5 13a7 7 0 0 1 7-7c2.5 0 4.5 1.2 5.7 3H21l-2 3v3l-2 1v3h-3v-2H9v2H6v-3l-1-1v-2",
+    CreditCard: "M2 6h20v12H2zM2 10h20",
+    Receipt: "M6 2h12v20l-3-2-3 2-3-2-3 2V2Zm2 5h8M8 11h8M8 15h5",
+    Bell: "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9ZM10 21a2 2 0 0 0 4 0",
+    HelpCircle: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20ZM9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4M12 17h.01",
+    Settings: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.14.36.44.66.9.8.13.04.27.06.4.06H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z",
+    Plus: "M12 5v14M5 12h14",
+    X: "M18 6 6 18M6 6l12 12",
+    Trash2: "M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6",
+    ArrowUpRight: "M7 17 17 7M7 7h10v10",
+    ArrowDownRight: "M7 7l10 10M17 7v10H7",
+    Wallet: "M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z",
+    Banknote: "M2 6h20v12H2zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM6 6v.01M18 6v.01M6 18v-.01M18 18v-.01",
+    DollarSign: "M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
+    Wifi: "M5 12.5a11 11 0 0 1 14 0M8.5 16a6 6 0 0 1 7 0M12 20h.01M2 8.5a16 16 0 0 1 20 0",
+    Pencil: "m17 3 4 4L7 21H3v-4L17 3Z",
+    Utensils: "M3 2v7c0 1 1 2 2 2s2-1 2-2V2M5 11v11M19 2v20M19 2a4 4 0 0 0-4 4v5h4",
+    ShoppingCart: "M6 6h15l-1.5 9h-12L6 6ZM6 6 5 2H2M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM18 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z",
+    Bus: "M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6ZM4 12h16M7 17v2M17 17v2M6.5 8h11",
+    Film: "M3 3h18v18H3zM7 3v18M17 3v18M3 8h4M3 16h4M17 8h4M17 16h4",
+    FileText: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6ZM14 2v6h6M9 13h6M9 17h6",
+    MoreHorizontal: "M6 12h.01M12 12h.01M18 12h.01",
+  };
+  const d = paths[name] || "";
+  return (
+    <svg
+      className={`lucide-icon ${className}`}
+      style={style}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d={d} />
+    </svg>
+  );
+}
+
+/* ============================== helpers ============================== */
+
+const fmtMoney = (n) =>
+  (n < 0 ? "-$" : "$") +
+  Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const fmtPct = (n) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
+
+const daysBetween = (a, b) => (new Date(b) - new Date(a)) / (1000 * 60 * 60 * 24);
+const addDays = (d, n) => {
+  const dt = new Date(d);
+  dt.setDate(dt.getDate() + n);
+  return dt;
+};
+const isoDate = (d) => new Date(d).toISOString().slice(0, 10);
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+function compoundValue(principal, annualRatePct, compoundsPerYear, years) {
+  const r = annualRatePct / 100;
+  if (compoundsPerYear <= 0) return principal * (1 + r * years);
+  return principal * Math.pow(1 + r / compoundsPerYear, compoundsPerYear * years);
+}
+const FREQ_MAP = { Daily: 365, Monthly: 12, Quarterly: 4, Annually: 1 };
+
+function balanceAt(acc, atDate) {
+  const txns = (acc.transactions || [])
+    .filter((tx) => new Date(tx.date) <= atDate)
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  if (acc.type !== "Savings") {
+    return acc.principal + txns.reduce((s, t) => s + t.amount, 0);
+  }
+
+  let balance = acc.principal;
+  let lastDate = acc.createdDate;
+  for (const tx of txns) {
+    const years = daysBetween(lastDate, tx.date) / 365;
+    if (years > 0) balance = compoundValue(balance, acc.rate, FREQ_MAP[acc.freq], years);
+    balance += tx.amount;
+    lastDate = tx.date;
+  }
+  const remainingYears = daysBetween(lastDate, atDate) / 365;
+  if (remainingYears > 0) balance = compoundValue(balance, acc.rate, FREQ_MAP[acc.freq], remainingYears);
+  return balance;
+}
+
+function interestEarnedAt(acc, atDate) {
+  if (acc.type !== "Savings") return 0;
+  const netDeposits = (acc.transactions || [])
+    .filter((tx) => new Date(tx.date) <= atDate)
+    .reduce((s, t) => s + t.amount, 0);
+  return balanceAt(acc, atDate) - acc.principal - netDeposits;
+}
+
+/* ---------- account theming ---------- */
+const ACCOUNT_META = {
+  Savings: { color: "#7A5AF8", bg: "#F3EFFF", icon: "PiggyBank", label: "Savings" },
+  Custom: { color: "#2E90FA", bg: "#EAF2FF", icon: "Wallet", label: "Account" },
+};
+
+const CUSTOM_PALETTE = [
+  { color: "#2E90FA", bg: "#EAF2FF" },
+  { color: "#12B76A", bg: "#ECFDF3" },
+  { color: "#F79009", bg: "#FFF6E9" },
+  { color: "#EE46BC", bg: "#FDF2FA" },
+  { color: "#F04438", bg: "#FEF3F2" },
+  { color: "#667085", bg: "#F2F4F7" },
+];
+
+function accountMeta(acc, index = 0) {
+  if (acc.type === "Savings") return ACCOUNT_META.Savings;
+  const p = CUSTOM_PALETTE[index % CUSTOM_PALETTE.length];
+  return { color: p.color, bg: p.bg, icon: "Wallet", label: acc.name || ACCOUNT_META.Custom.label };
+}
+
+const CATEGORY_META = {
+  Food: { color: "#F97066", icon: "Utensils" },
+  Grocery: { color: "#12B76A", icon: "ShoppingCart" },
+  Transport: { color: "#2E90FA", icon: "Bus" },
+  Entertainment: { color: "#7A5AF8", icon: "Film" },
+  Bills: { color: "#667085", icon: "FileText" },
+  Other: { color: "#98A2B3", icon: "MoreHorizontal" },
+};
+
+const CARD_THEMES = [
+  { from: "#0B1E3F", to: "#12305F", accent: "#5B9BFF" },
+  { from: "#0F3D3E", to: "#116466", accent: "#4FD1C5" },
+  { from: "#3A1249", to: "#5B1E6E", accent: "#C084FC" },
+];
+
+/* ---------- in-memory storage (replaces window.storage) ---------- */
+const memoryStore = {};
+async function loadKey(key, fallback) {
+  try {
+    return memoryStore[key] !== undefined ? JSON.parse(JSON.stringify(memoryStore[key])) : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+async function saveKey(key, value) {
+  try {
+    memoryStore[key] = value;
+  } catch (e) {
+    console.error("storage error", e);
+  }
+}
+
+function seedAccounts() {
+  const today = isoDate(new Date());
+  return [
+    { id: uid(), type: "Savings", name: "Savings", number: "", principal: 0, rate: 4.5, freq: "Monthly", createdDate: today, transactions: [] },
+    { id: uid(), type: "Custom", name: "Account 1", number: "", principal: 0, createdDate: today, transactions: [] },
+    { id: uid(), type: "Custom", name: "Account 2", number: "", principal: 0, createdDate: today, transactions: [] },
+    { id: uid(), type: "Custom", name: "Account 3", number: "", principal: 0, createdDate: today, transactions: [] },
+  ];
+}
+
+function seedCards() {
+  return [
+    { id: uid(), label: "Everyday", number: "", theme: 0, linkedAccountId: null, transactions: [] },
+    { id: uid(), label: "Travel", number: "", theme: 1, linkedAccountId: null, transactions: [] },
+    { id: uid(), label: "Business", number: "", theme: 2, linkedAccountId: null, transactions: [] },
+  ];
+}
+
+/* ============================== UI atoms ============================== */
+
+function Panel({ children, className = "" }) {
+  return (
+    <div className={`rounded-2xl bg-white border border-[#EAECF0] shadow-sm p-6 ${className}`} style={{ borderRadius: 16, background: "#fff", border: "1px solid #EAECF0", boxShadow: "0 1px 2px rgba(16,24,40,0.05)", padding: 24 }}>
+      {children}
+    </div>
+  );
+}
+
+function Pill({ children, tone = "neutral" }) {
+  const tones = {
+    up: { background: "#ECFDF3", color: "#12B76A" },
+    down: { background: "#FEF3F2", color: "#F04438" },
+    neutral: { background: "#F2F4F7", color: "#475467" },
+  };
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 600, ...tones[tone] }}>
+      {children}
+    </span>
+  );
+}
+
+function Button({ children, onClick, variant = "primary", type = "button", style = {} }) {
+  const base = { display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 8, padding: "8px 14px", fontSize: 14, fontWeight: 500, transition: "background-color 0.15s", cursor: "pointer", border: "none" };
+  const variants = {
+    primary: { background: "#0B5FFF", color: "#fff" },
+    ghost: { background: "transparent", border: "1px solid #D0D5DD", color: "#344054" },
+    danger: { background: "transparent", color: "#F04438" },
+  };
+  return (
+    <button type={type} onClick={onClick} style={{ ...base, ...variants[variant], ...style }}>
+      {children}
+    </button>
+  );
+}
+
+function Input({ label, ...props }) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#667085" }}>
+      {label}
+      <input
+        {...props}
+        style={{ borderRadius: 8, background: "#fff", border: "1px solid #D0D5DD", padding: "8px 12px", fontSize: 14, color: "#101828", outline: "none" }}
+      />
+    </label>
+  );
+}
+
+function Select({ label, options, ...props }) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#667085" }}>
+      {label}
+      <select
+        {...props}
+        style={{ borderRadius: 8, background: "#fff", border: "1px solid #D0D5DD", padding: "8px 12px", fontSize: 14, color: "#101828", outline: "none" }}
+      >
+        {options.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function CustomTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div style={{ borderRadius: 12, background: "#fff", border: "1px solid #EAECF0", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", padding: "10px 14px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 600, color: "#101828" }}>
+        <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#12B76A" }} />
+        {fmtMoney(payload[0].value)} balance
+      </div>
+      <div style={{ fontSize: 12, color: "#98A2B3", marginTop: 2 }}>{label}</div>
+    </div>
+  );
+}
+
+/* ---------- balance history / chart series ---------- */
+
+const PERIODS = ["1D", "7D", "1M", "3M", "ALL"];
+
+function earliestDate(accounts) {
+  let min = new Date();
+  accounts.forEach((a) => {
+    if (new Date(a.createdDate) < min) min = new Date(a.createdDate);
+  });
+  return min;
+}
+
+function buildSeries(accounts, period) {
+  const now = new Date();
+  let start;
+  let points;
+  let labelFmt;
+
+  if (period === "1D") {
+    start = addDays(now, -1);
+    points = 12;
+    labelFmt = (d) => d.toLocaleTimeString(undefined, { hour: "numeric" });
+  } else if (period === "7D") {
+    start = addDays(now, -7);
+    points = 7;
+    labelFmt = (d) => d.toLocaleDateString(undefined, { weekday: "short" });
+  } else if (period === "1M") {
+    start = addDays(now, -30);
+    points = 15;
+    labelFmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  } else if (period === "3M") {
+    start = addDays(now, -90);
+    points = 13;
+    labelFmt = (d) => d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  } else {
+    start = earliestDate(accounts);
+    if (now - start < 1000 * 60 * 60 * 24) start = addDays(now, -30);
+    points = 14;
+    labelFmt = (d) => d.toLocaleDateString(undefined, { month: "short", year: "2-digit" });
+  }
+
+  const step = (now - start) / (points - 1);
+  const data = [];
+  for (let i = 0; i < points; i++) {
+    const d = new Date(start.getTime() + step * i);
+    const total = accounts.reduce((s, a) => s + balanceAt(a, d), 0);
+    data.push({ label: labelFmt(d), value: Math.max(total, 0) });
+  }
+  return data;
+}
+
+function BalanceChart({ accounts, height = 260 }) {
+  const [period, setPeriod] = useState("7D");
+  const data = useMemo(() => buildSeries(accounts, period), [accounts, period]);
+  const hasData = accounts.some((a) => (a.transactions || []).length > 0);
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 600, color: "#101828", margin: 0 }}>Statistics</h3>
+        <div style={{ display: "flex", alignItems: "center", background: "#F2F4F7", borderRadius: 8, padding: 2 }}>
+          {PERIODS.map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              style={{
+                padding: "4px 10px", fontSize: 12, fontWeight: 500, borderRadius: 6, border: "none", cursor: "pointer",
+                background: period === p ? "#fff" : "transparent",
+                color: period === p ? "#101828" : "#667085",
+                boxShadow: period === p ? "0 1px 2px rgba(16,24,40,0.05)" : "none",
+              }}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{ height, margin: "0 -8px" }}>
+        {hasData ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="balGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#12B76A" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#12B76A" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="#EEF1F5" strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="label" tick={{ fill: "#98A2B3", fontSize: 11 }} axisLine={{ stroke: "#EAECF0" }} tickLine={false} />
+              <YAxis
+                tick={{ fill: "#98A2B3", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `$${v >= 1000 ? (v / 1000).toFixed(1) + "k" : v}`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area type="monotone" dataKey="value" stroke="#12B76A" strokeWidth={2.5} fill="url(#balGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, color: "#98A2B3" }}>
+            No activity yet — add a transaction to see your balance history.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ============================== Sidebar ============================== */
+
+function NavItem({ icon, label, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        width: "100%", display: "flex", alignItems: "center", gap: 12, borderRadius: 8, padding: "10px 12px",
+        fontSize: 14, fontWeight: 500, border: "none", cursor: "pointer", textAlign: "left",
+        background: active ? "#EAF2FF" : "transparent",
+        color: active ? "#0B5FFF" : "#475467",
+      }}
+    >
+      <Icon name={icon} size={18} color={active ? "#0B5FFF" : "#98A2B3"} />
+      {label}
+    </button>
+  );
+}
+
+function Sidebar({ page, setPage }) {
+  const [search, setSearch] = useState("");
+  const nav = [
+    { key: "dashboard", label: "Dashboard", icon: "LayoutDashboard" },
+    { key: "finance", label: "Finance", icon: "LineChartIcon" },
+    { key: "accounts", label: "Accounts", icon: "PiggyBank" },
+    { key: "cards", label: "Cards", icon: "CreditCard" },
+    { key: "expenses", label: "Expenses", icon: "Receipt" },
+  ];
+  return (
+    <aside style={{ width: 288, flexShrink: 0, background: "#fff", borderRight: "1px solid #EAECF0", display: "flex", flexDirection: "column", height: "100vh", position: "sticky", top: 0 }}>
+      <div style={{ padding: "24px 24px 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: "#0B5FFF", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon name="Landmark" size={18} color="#fff" />
+          </div>
+          <span style={{ fontSize: 18, fontWeight: 700, color: "#101828", letterSpacing: "-0.02em" }}>MK Bank Ltd</span>
+        </div>
+      </div>
+
+      <div style={{ padding: "0 24px", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, borderRadius: 8, border: "1px solid #D0D5DD", padding: "8px 12px", fontSize: 14, color: "#98A2B3" }}>
+          <Icon name="Search" size={15} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search..."
+            style={{ background: "transparent", border: "none", outline: "none", flex: 1, color: "#101828" }}
+          />
+        </div>
+      </div>
+
+      <nav style={{ padding: "0 16px", display: "flex", flexDirection: "column", gap: 4 }}>
+        {nav.map((n) => (
+          <NavItem key={n.key} icon={n.icon} label={n.label} active={page === n.key} onClick={() => setPage(n.key)} />
+        ))}
+      </nav>
+
+      <div style={{ marginTop: "auto", padding: "0 16px 20px", display: "flex", flexDirection: "column", gap: 4 }}>
+        <NavItem icon="Bell" label="Notifications" active={false} onClick={() => {}} />
+        <NavItem icon="HelpCircle" label="Help Center" active={false} onClick={() => {}} />
+        <NavItem icon="Settings" label="Settings" active={false} onClick={() => {}} />
+        <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 12, borderRadius: 12, border: "1px solid #EAECF0", padding: "10px 12px" }}>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#0B5FFF", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 600 }}>
+            Mk
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: "#101828" }}>Mk</div>
+            <div style={{ fontSize: 12, color: "#98A2B3" }}>mk@mkbank.ltd</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+/* ============================== Dashboard ============================== */
+
+function TransactionRow({ tx, accountLabel }) {
+  const positive = tx.amount >= 0;
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #F2F4F7" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+        <div style={{ width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: positive ? "#ECFDF3" : "#FEF3F2" }}>
+          <Icon name={positive ? "ArrowDownRight" : "ArrowUpRight"} size={16} color={positive ? "#12B76A" : "#F04438"} />
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: "#101828" }}>
+            {tx.label || (positive ? "Deposit" : "Withdrawal")} · {accountLabel}
+          </div>
+          <div style={{ fontSize: 12, color: "#98A2B3" }}>{tx.date}{tx.note ? ` · ${tx.note}` : ""}</div>
+        </div>
+      </div>
+      <div style={{ fontSize: 14, fontWeight: 600, flexShrink: 0, color: positive ? "#12B76A" : "#F04438" }}>
+        {positive ? "+" : "-"}{fmtMoney(Math.abs(tx.amount))}
+      </div>
+    </div>
+  );
+}
+
+function allTransactions(accounts) {
+  const rows = [];
+  accounts.forEach((a) => {
+    (a.transactions || []).forEach((tx) =>
+      rows.push({ ...tx, accountLabel: a.name || (a.type === "Savings" ? "Savings" : "Account"), accountType: a.type })
+    );
+  });
+  return rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+function StatCard({ label, value, icon, tone }) {
+  const bg = tone === "up" ? "#ECFDF3" : tone === "down" ? "#FEF3F2" : "#EAF2FF";
+  const fg = tone === "up" ? "#12B76A" : tone === "down" ? "#F04438" : "#0B5FFF";
+  return (
+    <Panel>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <div style={{ width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: bg }}>
+          <Icon name={icon} size={15} color={fg} />
+        </div>
+        <span style={{ fontSize: 12, color: "#98A2B3", fontWeight: 500 }}>{label}</span>
+      </div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: "#101828" }}>{value}</div>
+    </Panel>
+  );
+}
+
+function Dashboard({ accounts }) {
+  const total = useMemo(() => accounts.reduce((s, a) => s + balanceAt(a, new Date()), 0), [accounts]);
+  const monthAgoTotal = useMemo(
+    () => accounts.reduce((s, a) => s + balanceAt(a, addDays(new Date(), -30)), 0),
+    [accounts]
+  );
+  const pctChange = monthAgoTotal > 0 ? ((total - monthAgoTotal) / monthAgoTotal) * 100 : 0;
+  const allTx = useMemo(() => allTransactions(accounts), [accounts]);
+  const totalIncoming = useMemo(() => allTx.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0), [allTx]);
+  const totalOutgoing = useMemo(() => allTx.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0), [allTx]);
+  const txns = useMemo(() => allTx.slice(0, 8), [allTx]);
+
+  return (
+    <div style={{ maxWidth: 960 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: "#101828", marginBottom: 24 }}>Dashboard</h1>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 24 }} className="stats-grid">
+        <StatCard label="Total Balance" value={fmtMoney(total)} icon="Wallet" tone="neutral" />
+        <StatCard label="Total Incoming" value={fmtMoney(totalIncoming)} icon="ArrowDownRight" tone="up" />
+        <StatCard label="Total Outgoing" value={fmtMoney(totalOutgoing)} icon="ArrowUpRight" tone="down" />
+      </div>
+
+      <div style={{ marginBottom: 24 }}>
+        <Panel>
+          <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.03em", color: "#98A2B3", fontWeight: 500, marginBottom: 4 }}>My Balance</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+            <span style={{ fontSize: 36, fontWeight: 700, color: "#101828" }}>{fmtMoney(total)}</span>
+            <Pill tone={pctChange >= 0 ? "up" : "down"}>{fmtPct(pctChange)}</Pill>
+          </div>
+          <BalanceChart accounts={accounts} />
+        </Panel>
+      </div>
+
+      <Panel>
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: "#101828", marginBottom: 4 }}>Recent Transactions</h2>
+        {txns.length === 0 ? (
+          <div style={{ fontSize: 14, color: "#98A2B3", padding: "32px 0", textAlign: "center" }}>No transactions yet.</div>
+        ) : (
+          <div style={{ marginTop: 8 }}>
+            {txns.map((tx) => (
+              <TransactionRow key={tx.id} tx={tx} accountLabel={tx.accountLabel} />
+            ))}
+          </div>
+        )}
+      </Panel>
+    </div>
+  );
+}
+
+/* ============================== Finance ============================== */
+
+function PortfolioStats({ accounts }) {
+  const total = accounts.reduce((s, a) => s + balanceAt(a, new Date()), 0);
+  return (
+    <Panel>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: "#101828", margin: 0 }}>Portfolio Stats</h2>
+        <span style={{ fontSize: 12, fontWeight: 500, color: "#0B5FFF", cursor: "pointer" }}>View All +</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {accounts.map((a, i) => {
+          const meta = accountMeta(a, i);
+          const bal = balanceAt(a, new Date());
+          const pct = total > 0 ? (bal / total) * 100 : 0;
+          return (
+            <div key={a.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: meta.bg }}>
+                  <Icon name={meta.icon} size={15} color={meta.color} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: "#101828" }}>{a.name || meta.label}</div>
+                  <div style={{ fontSize: 12, color: "#98A2B3" }}>{pct.toFixed(2)}%</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "#101828" }}>{fmtMoney(bal)}</div>
+            </div>
+          );
+        })}
+      </div>
+    </Panel>
+  );
+}
+
+function InterestEarnedPanel({ accounts }) {
+  const savings = accounts.filter((a) => a.type === "Savings");
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const totalInterest = savings.reduce((s, a) => s + interestEarnedAt(a, now), 0);
+  const totalPrincipal = savings.reduce((s, a) => s + a.principal, 0);
+  const thisMonth = savings.reduce((s, a) => s + (interestEarnedAt(a, now) - interestEarnedAt(a, startOfMonth)), 0);
+  const lastMonth = savings.reduce(
+    (s, a) => s + (interestEarnedAt(a, startOfMonth) - interestEarnedAt(a, startOfLastMonth)),
+    0
+  );
+  const yieldPct = totalPrincipal > 0 ? (totalInterest / totalPrincipal) * 100 : 0;
+  const gaugePct = Math.min(Math.max((yieldPct / 20) * 100, 2), 100);
+
+  return (
+    <Panel>
+      <h2 style={{ fontSize: 16, fontWeight: 600, color: "#101828", marginBottom: 16 }}>Interest Earned</h2>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 8, marginBottom: 4 }}>
+        <span style={{ fontSize: 30, fontWeight: 700, color: "#101828" }}>{fmtMoney(Math.max(totalInterest, 0))}</span>
+      </div>
+      <div style={{ fontSize: 12, color: "#98A2B3", marginBottom: 16 }}>total return on savings</div>
+
+      <div style={{ position: "relative", height: 8, borderRadius: 999, marginBottom: 8, background: "linear-gradient(90deg,#F04438,#F79009,#12B76A)" }}>
+        <div
+          style={{ position: "absolute", top: -4, width: 16, height: 16, borderRadius: "50%", background: "#fff", border: "2px solid #101828", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", left: `calc(${gaugePct}% - 8px)` }}
+        />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#98A2B3", marginBottom: 16 }}>
+        <span>0%</span>
+        <span>{yieldPct.toFixed(2)}% yield</span>
+        <span>20%</span>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <Pill tone={thisMonth >= 0 ? "up" : "down"}>This month {fmtMoney(thisMonth)}</Pill>
+        <Pill tone={lastMonth >= 0 ? "up" : "down"}>Last month {fmtMoney(lastMonth)}</Pill>
+      </div>
+    </Panel>
+  );
+}
+
+function TransactionsTable({ accounts }) {
+  const [query, setQuery] = useState("");
+  const all = allTransactions(accounts);
+  const txns = query
+    ? all.filter(
+        (tx) =>
+          tx.accountLabel.toLowerCase().includes(query.toLowerCase()) ||
+          (tx.note || "").toLowerCase().includes(query.toLowerCase())
+      )
+    : all;
+  return (
+    <Panel>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: "#101828", margin: 0 }}>Transactions</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, borderRadius: 8, border: "1px solid #D0D5DD", padding: "6px 12px", fontSize: 14, color: "#98A2B3" }}>
+            <Icon name="Search" size={14} />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search transactions..."
+              style={{ background: "transparent", border: "none", outline: "none", color: "#101828", width: 160 }}
+            />
+          </div>
+          <Button variant="ghost" style={{ fontSize: 12, padding: "6px 12px" }}>Filter</Button>
+        </div>
+      </div>
+      {txns.length === 0 ? (
+        <div style={{ fontSize: 14, color: "#98A2B3", padding: "32px 0", textAlign: "center" }}>No transactions yet.</div>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", fontSize: 14, borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ textAlign: "left", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.03em", color: "#98A2B3", borderBottom: "1px solid #EAECF0" }}>
+                <th style={{ paddingBottom: 8, fontWeight: 500 }}>Account</th>
+                <th style={{ paddingBottom: 8, fontWeight: 500 }}>Label</th>
+                <th style={{ paddingBottom: 8, fontWeight: 500 }}>Date</th>
+                <th style={{ paddingBottom: 8, fontWeight: 500 }}>Note</th>
+                <th style={{ paddingBottom: 8, fontWeight: 500, textAlign: "right" }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {txns.map((tx) => (
+                <tr key={tx.id} style={{ borderBottom: "1px solid #F2F4F7" }}>
+                  <td style={{ padding: "10px 0", color: "#101828", fontWeight: 500 }}>{tx.accountLabel}</td>
+                  <td style={{ padding: "10px 0", color: "#667085" }}>{tx.label || "—"}</td>
+                  <td style={{ padding: "10px 0", color: "#667085" }}>{tx.date}</td>
+                  <td style={{ padding: "10px 0", color: "#667085" }}>{tx.note || "—"}</td>
+                  <td style={{ padding: "10px 0", textAlign: "right", fontWeight: 600, color: tx.amount >= 0 ? "#12B76A" : "#F04438" }}>
+                    {tx.amount >= 0 ? "+" : "-"}{fmtMoney(Math.abs(tx.amount))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function Finance({ accounts }) {
+  const [selected, setSelected] = useState("All");
+  const now = new Date();
+  const monthAgo = addDays(now, -30);
+
+  const chartAccounts = selected === "All" ? accounts : accounts.filter((a) => a.id === selected);
+  const total = chartAccounts.reduce((s, a) => s + balanceAt(a, now), 0);
+  const monthAgoTotal = chartAccounts.reduce((s, a) => s + balanceAt(a, monthAgo), 0);
+  const pctChange = monthAgoTotal > 0 ? ((total - monthAgoTotal) / monthAgoTotal) * 100 : 0;
+
+  return (
+    <div>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: "#101828", marginBottom: 24 }}>Finance</h1>
+
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24, alignItems: "start" }} className="finance-grid">
+        <Panel>
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
+            <div>
+              <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.03em", color: "#98A2B3", fontWeight: 500, marginBottom: 4 }}>My Portfolio</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 28, fontWeight: 700, color: "#101828" }}>{fmtMoney(total)}</span>
+                <Pill tone={pctChange >= 0 ? "up" : "down"}>{fmtPct(pctChange)}</Pill>
+              </div>
+            </div>
+            <select
+              value={selected}
+              onChange={(e) => setSelected(e.target.value)}
+              style={{ borderRadius: 8, border: "1px solid #D0D5DD", padding: "8px 12px", fontSize: 14, color: "#101828", outline: "none", background: "#fff" }}
+            >
+              <option value="All">All accounts</option>
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.name || (a.type === "Savings" ? "Savings" : "Account")}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <BalanceChart accounts={chartAccounts} height={280} />
+          </div>
+        </Panel>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <PortfolioStats accounts={accounts} />
+          <InterestEarnedPanel accounts={accounts} />
+        </div>
+      </div>
+
+      <TransactionsTable accounts={accounts} />
+    </div>
+  );
+}
+
+/* ============================== Accounts ============================== */
+
+const DEPOSIT_LABELS = ["Deposit", "Salary", "Payout", "Transfer In", "Refund", "Custom"];
+const WITHDRAW_LABELS = ["Withdrawal", "Transfer Out", "Bill", "Purchase", "Custom"];
+
+function TxnForm({ onSubmit, onClose }) {
+  const [type, setType] = useState("Deposit");
+  const [label, setLabel] = useState("Deposit");
+  const [customLabel, setCustomLabel] = useState("");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(isoDate(new Date()));
+  const [note, setNote] = useState("");
+
+  const labelOptions = type === "Withdraw" ? WITHDRAW_LABELS : DEPOSIT_LABELS;
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!amount) return;
+    const val = parseFloat(amount);
+    const finalLabel = label === "Custom" ? (customLabel.trim() || (type === "Withdraw" ? "Withdrawal" : "Deposit")) : label;
+    onSubmit({ id: uid(), date, note, label: finalLabel, amount: type === "Withdraw" ? -Math.abs(val) : Math.abs(val) });
+    onClose();
+  };
+
+  return (
+    <form onSubmit={submit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12, paddingTop: 12, borderTop: "1px solid #F2F4F7" }}>
+      <Select
+        label="Type"
+        options={["Deposit", "Withdraw"]}
+        value={type}
+        onChange={(e) => {
+          const v = e.target.value;
+          setType(v);
+          setLabel(v === "Withdraw" ? "Withdrawal" : "Deposit");
+        }}
+      />
+      <Select label="Label" options={labelOptions} value={label} onChange={(e) => setLabel(e.target.value)} />
+      {label === "Custom" && (
+        <Input label="Custom label" placeholder="e.g. Freelance income" value={customLabel} onChange={(e) => setCustomLabel(e.target.value)} />
+      )}
+      <Input label="Amount ($)" type="number" step="0.01" placeholder="250" value={amount} onChange={(e) => setAmount(e.target.value)} />
+      <Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <Input label="Note (optional)" placeholder="Paycheck" value={note} onChange={(e) => setNote(e.target.value)} />
+      <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", gap: 8, paddingTop: 4 }}>
+        <Button variant="ghost" onClick={onClose}>Cancel</Button>
+        <Button type="submit">Save transaction</Button>
+      </div>
+    </form>
+  );
+}
+
+function AccountCard({ acc, index, onAddTransaction, onDeleteTransaction, onUpdateAccount, onDeleteAccount }) {
+  const [showForm, setShowForm] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState(acc.name || "");
+  const [numberDraft, setNumberDraft] = useState(acc.number || "");
+  const [rateDraft, setRateDraft] = useState(acc.rate != null ? String(acc.rate) : "4.5");
+  const [freqDraft, setFreqDraft] = useState(acc.freq || "Monthly");
+  const meta = accountMeta(acc, index);
+  const bal = balanceAt(acc, new Date());
+  const interest = acc.type === "Savings" ? interestEarnedAt(acc, new Date()) : 0;
+  const txns = [...(acc.transactions || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const startEdit = () => {
+    setNameDraft(acc.name || "");
+    setNumberDraft(acc.number || "");
+    setRateDraft(acc.rate != null ? String(acc.rate) : "4.5");
+    setFreqDraft(acc.freq || "Monthly");
+    setEditing(true);
+  };
+  const saveEdit = () => {
+    const fields = { name: nameDraft.trim() || meta.label, number: numberDraft.trim() };
+    if (acc.type === "Savings") {
+      const parsedRate = parseFloat(rateDraft);
+      fields.rate = isNaN(parsedRate) ? acc.rate : Math.max(0, parsedRate);
+      fields.freq = freqDraft;
+    }
+    onUpdateAccount(acc.id, fields);
+    setEditing(false);
+  };
+
+  return (
+    <Panel>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+          <div style={{ width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: meta.bg, flexShrink: 0 }}>
+            <Icon name={meta.icon} size={18} color={meta.color} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            {editing ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <input
+                  autoFocus
+                  value={nameDraft}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  placeholder="Account name"
+                  style={{ borderRadius: 6, border: "1px solid #D0D5DD", padding: "4px 8px", fontSize: 13, outline: "none", width: 160 }}
+                />
+                <input
+                  value={numberDraft}
+                  onChange={(e) => setNumberDraft(e.target.value)}
+                  placeholder="Account number"
+                  style={{ borderRadius: 6, border: "1px solid #D0D5DD", padding: "4px 8px", fontSize: 12, outline: "none", fontFamily: "monospace", width: 160 }}
+                />
+                {acc.type === "Savings" && (
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <input
+                      value={rateDraft}
+                      onChange={(e) => setRateDraft(e.target.value)}
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="APY %"
+                      style={{ borderRadius: 6, border: "1px solid #D0D5DD", padding: "4px 8px", fontSize: 12, outline: "none", width: 76 }}
+                    />
+                    <select
+                      value={freqDraft}
+                      onChange={(e) => setFreqDraft(e.target.value)}
+                      style={{ borderRadius: 6, border: "1px solid #D0D5DD", padding: "4px 6px", fontSize: 12, outline: "none", width: 100 }}
+                    >
+                      {Object.keys(FREQ_MAP).map((f) => (
+                        <option key={f} value={f}>{f}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#101828", display: "flex", alignItems: "center", gap: 6 }}>
+                  {acc.name || meta.label}
+                  <button onClick={startEdit} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", color: "#98A2B3" }}>
+                    <Icon name="Pencil" size={12} />
+                  </button>
+                </div>
+                <div style={{ fontSize: 12, color: "#98A2B3" }}>
+                  {acc.number ? `Acc no. ${acc.number}` : "No account number"}
+                  {acc.type === "Savings" ? ` · ${acc.rate}% APY · ${acc.freq.toLowerCase()}` : ""}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: "#101828" }}>{fmtMoney(bal)}</div>
+          {acc.type === "Savings" && <div style={{ fontSize: 12, color: "#12B76A", fontWeight: 500 }}>+{fmtMoney(Math.max(interest, 0))} interest</div>}
+        </div>
+      </div>
+
+      {editing && (
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+          <Button variant="ghost" style={{ fontSize: 12, padding: "4px 10px" }} onClick={() => setEditing(false)}>Cancel</Button>
+          <Button style={{ fontSize: 12, padding: "4px 10px" }} onClick={saveEdit}>Save</Button>
+        </div>
+      )}
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+        <Button variant="ghost" style={{ fontSize: 12 }} onClick={() => setShowForm((v) => !v)}>
+          <Icon name={showForm ? "X" : "Plus"} size={13} /> {showForm ? "Close" : "Add transaction"}
+        </Button>
+        {txns.length > 0 && (
+          <button onClick={() => setShowHistory((v) => !v)} style={{ fontSize: 12, color: "#98A2B3", background: "none", border: "none", cursor: "pointer", marginLeft: "auto" }}>
+            {showHistory ? "Hide" : "Show"} {txns.length} transaction{txns.length !== 1 ? "s" : ""}
+          </button>
+        )}
+        {acc.type !== "Savings" && (
+          <button onClick={() => onDeleteAccount(acc.id)} style={{ fontSize: 12, color: "#F04438", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+            <Icon name="Trash2" size={12} /> Remove
+          </button>
+        )}
+      </div>
+
+      {showForm && <TxnForm onSubmit={(tx) => onAddTransaction(acc.id, tx)} onClose={() => setShowForm(false)} />}
+
+      {showHistory && txns.length > 0 && (
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #F2F4F7" }}>
+          {txns.map((tx) => (
+            <div key={tx.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12, padding: "6px 0" }}>
+              <span style={{ color: "#667085" }}>{tx.label ? `${tx.label} · ` : ""}{tx.date}{tx.note ? ` · ${tx.note}` : ""}</span>
+              <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ color: tx.amount < 0 ? "#F04438" : "#12B76A" }}>
+                  {tx.amount < 0 ? "-" : "+"}{fmtMoney(Math.abs(tx.amount))}
+                </span>
+                <button onClick={() => onDeleteTransaction(acc.id, tx.id)} style={{ color: "#98A2B3", background: "none", border: "none", cursor: "pointer", display: "flex" }}>
+                  <Icon name="X" size={12} />
+                </button>
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+function Accounts({ accounts, addTransaction, deleteTransaction, addAccount, updateAccount, deleteAccount }) {
+  return (
+    <div style={{ maxWidth: 840 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#101828", marginBottom: 4 }}>Accounts</h1>
+          <p style={{ fontSize: 14, color: "#98A2B3", margin: 0 }}>Name your accounts, add account numbers, and log deposits and withdrawals.</p>
+        </div>
+        <Button onClick={addAccount}><Icon name="Plus" size={14} /> Add account</Button>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }} className="accounts-grid">
+        {accounts.map((acc, i) => (
+          <AccountCard
+            key={acc.id}
+            acc={acc}
+            index={i}
+            onAddTransaction={addTransaction}
+            onDeleteTransaction={deleteTransaction}
+            onUpdateAccount={updateAccount}
+            onDeleteAccount={deleteAccount}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============================== Cards ============================== */
+
+function maskNumber(num) {
+  const digits = (num || "").replace(/\D/g, "").padEnd(16, "•");
+  const groups = digits.match(/.{1,4}/g) || [];
+  return groups.join("  ");
+}
+
+function BankCard({ card, onChangeNumber }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(card.number);
+  const theme = CARD_THEMES[card.theme % CARD_THEMES.length];
+
+  const save = () => {
+    onChangeNumber(card.id, draft.replace(/\D/g, "").slice(0, 16));
+    setEditing(false);
+  };
+
+  return (
+    <div
+      style={{ borderRadius: 16, padding: 20, color: "#fff", boxShadow: "0 8px 20px rgba(0,0,0,0.15)", position: "relative", overflow: "hidden", height: 192, display: "flex", flexDirection: "column", justifyContent: "space-between", background: `linear-gradient(135deg, ${theme.from}, ${theme.to})` }}
+    >
+      <div
+        style={{ pointerEvents: "none", position: "absolute", right: -40, top: -40, width: 160, height: 160, borderRadius: "50%", opacity: 0.2, background: theme.accent }}
+      />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
+        <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: "0.02em" }}>{card.label}</span>
+        <Icon name="Wifi" size={18} style={{ transform: "rotate(90deg)", opacity: 0.8 }} />
+      </div>
+
+      <div style={{ position: "relative" }}>
+        <div style={{ width: 36, height: 28, borderRadius: 6, marginBottom: 12, background: `linear-gradient(135deg, ${theme.accent}, #fff8)` }} />
+        {editing ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              autoFocus
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              maxLength={19}
+              placeholder="Enter card number"
+              style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, padding: "4px 8px", fontSize: 14, fontFamily: "monospace", letterSpacing: "0.1em", outline: "none", color: "#fff", width: "100%" }}
+            />
+            <button onClick={save} style={{ fontSize: 12, background: "#fff", color: "#101828", borderRadius: 6, padding: "4px 8px", fontWeight: 500, border: "none", cursor: "pointer" }}>Save</button>
+          </div>
+        ) : (
+          <button onClick={() => setEditing(true)} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "monospace", fontSize: 18, letterSpacing: "0.1em", background: "none", border: "none", color: "#fff", cursor: "pointer" }}>
+            {maskNumber(card.number)}
+            <Icon name="Pencil" size={13} style={{ opacity: 0.5 }} />
+          </button>
+        )}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", fontSize: 12 }}>
+        <div>
+          <div style={{ opacity: 0.6, fontSize: 10, textTransform: "uppercase" }}>Card holder</div>
+          <div style={{ fontWeight: 500 }}>Mk</div>
+        </div>
+        <div>
+          <div style={{ opacity: 0.6, fontSize: 10, textTransform: "uppercase" }}>MK Bank Ltd</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CardTxnForm({ onSubmit, onClose }) {
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("Food");
+  const [date, setDate] = useState(isoDate(new Date()));
+  const [note, setNote] = useState("");
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!amount) return;
+    onSubmit({ id: uid(), date, note, category, amount: -Math.abs(parseFloat(amount)) });
+    onClose();
+  };
+
+  return (
+    <form onSubmit={submit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+      <Input label="Amount ($)" type="number" step="0.01" placeholder="42.50" value={amount} onChange={(e) => setAmount(e.target.value)} />
+      <Select label="Category" options={Object.keys(CATEGORY_META)} value={category} onChange={(e) => setCategory(e.target.value)} />
+      <Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <Input label="Note (optional)" placeholder="Coffee with client" value={note} onChange={(e) => setNote(e.target.value)} />
+      <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", gap: 8, paddingTop: 4 }}>
+        <Button variant="ghost" onClick={onClose}>Cancel</Button>
+        <Button type="submit">Add expense</Button>
+      </div>
+    </form>
+  );
+}
+
+function Cards({ cards, accounts, changeCardNumber, changeCardLink, addCardTransaction, deleteCardTransaction }) {
+  const [openFormId, setOpenFormId] = useState(null);
+
+  return (
+    <div style={{ maxWidth: 960 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: "#101828", marginBottom: 4 }}>Cards</h1>
+      <p style={{ fontSize: 14, color: "#98A2B3", marginBottom: 24 }}>Tap a card number to edit it, link a card to an account, then log expenses — linked expenses deduct from that account automatically.</p>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 32 }} className="cards-grid">
+        {cards.map((c) => (
+          <BankCard key={c.id} card={c} onChangeNumber={changeCardNumber} />
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }} className="cards-grid">
+        {cards.map((c) => {
+          const txns = [...(c.transactions || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+          const linkedAccount = accounts.find((a) => a.id === c.linkedAccountId);
+          return (
+            <Panel key={c.id}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: "#101828", margin: 0 }}>{c.label} card</h3>
+                <Button variant="ghost" style={{ fontSize: 12 }} onClick={() => setOpenFormId(openFormId === c.id ? null : c.id)}>
+                  <Icon name={openFormId === c.id ? "X" : "Plus"} size={13} /> {openFormId === c.id ? "Close" : "Add transaction"}
+                </Button>
+              </div>
+
+              <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12, color: "#667085", marginBottom: 10 }}>
+                Linked account
+                <select
+                  value={c.linkedAccountId || ""}
+                  onChange={(e) => changeCardLink(c.id, e.target.value)}
+                  style={{ borderRadius: 8, background: "#fff", border: "1px solid #D0D5DD", padding: "6px 10px", fontSize: 13, color: "#101828", outline: "none" }}
+                >
+                  <option value="">Not linked</option>
+                  {accounts.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name || (a.type === "Savings" ? "Savings" : "Account")}</option>
+                  ))}
+                </select>
+              </label>
+              {linkedAccount && (
+                <div style={{ fontSize: 11, color: "#0B5FFF", marginBottom: 8 }}>
+                  Expenses on this card deduct from {linkedAccount.name || "this account"}
+                </div>
+              )}
+
+              {openFormId === c.id && (
+                <CardTxnForm onSubmit={(tx) => addCardTransaction(c.id, tx)} onClose={() => setOpenFormId(null)} />
+              )}
+              <div style={{ marginTop: 12 }}>
+                {txns.length === 0 ? (
+                  <div style={{ fontSize: 12, color: "#98A2B3", padding: "16px 0", textAlign: "center" }}>No expenses logged.</div>
+                ) : (
+                  txns.slice(0, 6).map((tx) => {
+                    const cat = CATEGORY_META[tx.category] || CATEGORY_META.Other;
+                    return (
+                      <div key={tx.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #F2F4F7", fontSize: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <Icon name={cat.icon} size={13} color={cat.color} />
+                          <span style={{ color: "#475467" }}>{tx.date}{tx.note ? ` · ${tx.note}` : ""}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontWeight: 600, color: "#F04438" }}>-{fmtMoney(Math.abs(tx.amount))}</span>
+                          <button onClick={() => deleteCardTransaction(c.id, tx.id)} style={{ color: "#98A2B3", background: "none", border: "none", cursor: "pointer", display: "flex" }}>
+                            <Icon name="X" size={11} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </Panel>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ============================== Expenses ============================== */
+
+function Expenses({ cards }) {
+  const allExpenses = useMemo(() => {
+    const rows = [];
+    cards.forEach((c) => {
+      (c.transactions || []).forEach((tx) => rows.push({ ...tx, cardLabel: c.label }));
+    });
+    return rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [cards]);
+
+  const byCategory = useMemo(() => {
+    const map = {};
+    allExpenses.forEach((tx) => {
+      const cat = tx.category || "Other";
+      map[cat] = (map[cat] || 0) + Math.abs(tx.amount);
+    });
+    return map;
+  }, [allExpenses]);
+
+  const total = Object.values(byCategory).reduce((s, v) => s + v, 0);
+
+  return (
+    <div style={{ maxWidth: 960 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: "#101828", marginBottom: 24 }}>Expenses</h1>
+
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 24 }} className="expenses-grid">
+        <Panel>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: "#101828", marginBottom: 16 }}>By category</h2>
+          {total === 0 ? (
+            <div style={{ fontSize: 14, color: "#98A2B3", padding: "24px 0", textAlign: "center" }}>No card expenses yet.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {Object.entries(byCategory).map(([cat, amt]) => {
+                const meta = CATEGORY_META[cat] || CATEGORY_META.Other;
+                const pct = (amt / total) * 100;
+                return (
+                  <div key={cat}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 14, marginBottom: 4 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 8, color: "#101828", fontWeight: 500 }}>
+                        <Icon name={meta.icon} size={14} color={meta.color} /> {cat}
+                      </span>
+                      <span style={{ color: "#667085" }}>{fmtMoney(amt)} · {pct.toFixed(0)}%</span>
+                    </div>
+                    <div style={{ height: 8, borderRadius: 999, background: "#F2F4F7" }}>
+                      <div style={{ height: 8, borderRadius: 999, width: `${pct}%`, background: meta.color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+        <Panel>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: "#101828", marginBottom: 4 }}>Total spent</h2>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "#101828", marginTop: 8 }}>{fmtMoney(total)}</div>
+          <div style={{ fontSize: 12, color: "#98A2B3", marginTop: 4 }}>across {cards.length} cards · {allExpenses.length} transactions</div>
+        </Panel>
+      </div>
+
+      <Panel>
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: "#101828", marginBottom: 16 }}>All expenses</h2>
+        {allExpenses.length === 0 ? (
+          <div style={{ fontSize: 14, color: "#98A2B3", padding: "32px 0", textAlign: "center" }}>No expenses logged yet.</div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", fontSize: 14, borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ textAlign: "left", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.03em", color: "#98A2B3", borderBottom: "1px solid #EAECF0" }}>
+                  <th style={{ paddingBottom: 8, fontWeight: 500 }}>Card</th>
+                  <th style={{ paddingBottom: 8, fontWeight: 500 }}>Category</th>
+                  <th style={{ paddingBottom: 8, fontWeight: 500 }}>Date</th>
+                  <th style={{ paddingBottom: 8, fontWeight: 500 }}>Note</th>
+                  <th style={{ paddingBottom: 8, fontWeight: 500, textAlign: "right" }}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allExpenses.map((tx) => {
+                  const meta = CATEGORY_META[tx.category] || CATEGORY_META.Other;
+                  return (
+                    <tr key={tx.id} style={{ borderBottom: "1px solid #F2F4F7" }}>
+                      <td style={{ padding: "10px 0", color: "#101828", fontWeight: 500 }}>{tx.cardLabel}</td>
+                      <td style={{ padding: "10px 0" }}>
+                        <span
+                          style={{ display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 500, background: meta.color + "1A", color: meta.color }}
+                        >
+                          {tx.category}
+                        </span>
+                      </td>
+                      <td style={{ padding: "10px 0", color: "#667085" }}>{tx.date}</td>
+                      <td style={{ padding: "10px 0", color: "#667085" }}>{tx.note || "—"}</td>
+                      <td style={{ padding: "10px 0", textAlign: "right", fontWeight: 600, color: "#F04438" }}>-{fmtMoney(Math.abs(tx.amount))}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Panel>
+    </div>
+  );
+}
+
+/* ============================== Main App ============================== */
+
+function MKBankApp() {
+  const [page, setPage] = useState("dashboard");
+  const [accounts, setAccounts] = useState(seedAccounts());
+  const [cards, setCards] = useState(seedCards());
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const a = await loadKey("mkbank-accounts", null);
+      const c = await loadKey("mkbank-cards", null);
+      if (a) setAccounts(a);
+      if (c) setCards(c);
+      setLoaded(true);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (loaded) saveKey("mkbank-accounts", accounts);
+  }, [accounts, loaded]);
+
+  useEffect(() => {
+    if (loaded) saveKey("mkbank-cards", cards);
+  }, [cards, loaded]);
+
+  const addTransaction = useCallback((accId, tx) => {
+    setAccounts((prev) => prev.map((a) => (a.id === accId ? { ...a, transactions: [...(a.transactions || []), tx] } : a)));
+  }, []);
+  const deleteTransaction = useCallback((accId, txId) => {
+    setAccounts((prev) =>
+      prev.map((a) => (a.id === accId ? { ...a, transactions: (a.transactions || []).filter((t) => t.id !== txId) } : a))
+    );
+  }, []);
+  const addAccount = useCallback(() => {
+    setAccounts((prev) => [
+      ...prev,
+      { id: uid(), type: "Custom", name: `Account ${prev.length + 1}`, number: "", principal: 0, createdDate: isoDate(new Date()), transactions: [] },
+    ]);
+  }, []);
+  const updateAccount = useCallback((accId, fields) => {
+    setAccounts((prev) => prev.map((a) => (a.id === accId ? { ...a, ...fields } : a)));
+  }, []);
+  const deleteAccount = useCallback((accId) => {
+    setAccounts((prev) => (prev.length > 1 ? prev.filter((a) => a.id !== accId) : prev));
+    setCards((prev) => prev.map((c) => (c.linkedAccountId === accId ? { ...c, linkedAccountId: null } : c)));
+  }, []);
+
+  const changeCardNumber = useCallback((cardId, number) => {
+    setCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, number } : c)));
+  }, []);
+  const changeCardLink = useCallback((cardId, accountId) => {
+    setCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, linkedAccountId: accountId || null } : c)));
+  }, []);
+  const addCardTransaction = useCallback(
+    (cardId, tx) => {
+      const card = cards.find((c) => c.id === cardId);
+      let finalTx = tx;
+      if (card && card.linkedAccountId) {
+        const mirroredId = uid();
+        finalTx = { ...tx, linkedTxId: mirroredId };
+        const mirrored = {
+          id: mirroredId,
+          date: tx.date,
+          amount: tx.amount,
+          label: "Card Expense",
+          note: `${card.label} card${tx.note ? " · " + tx.note : ""}`,
+        };
+        setAccounts((prev) =>
+          prev.map((a) => (a.id === card.linkedAccountId ? { ...a, transactions: [...(a.transactions || []), mirrored] } : a))
+        );
+      }
+      setCards((prev) => prev.map((c) => (c.id === cardId ? { ...c, transactions: [...(c.transactions || []), finalTx] } : c)));
+    },
+    [cards]
+  );
+  const deleteCardTransaction = useCallback(
+    (cardId, txId) => {
+      const card = cards.find((c) => c.id === cardId);
+      const tx = card && (card.transactions || []).find((t) => t.id === txId);
+      setCards((prev) =>
+        prev.map((c) => (c.id === cardId ? { ...c, transactions: (c.transactions || []).filter((t) => t.id !== txId) } : c))
+      );
+      if (card && card.linkedAccountId && tx && tx.linkedTxId) {
+        setAccounts((prev) =>
+          prev.map((a) =>
+            a.id === card.linkedAccountId ? { ...a, transactions: (a.transactions || []).filter((t) => t.id !== tx.linkedTxId) } : a
+          )
+        );
+      }
+    },
+    [cards]
+  );
+
+  return (
+    <div style={{ minHeight: "100vh", width: "100%", background: "#F7F8FA", display: "flex", fontFamily: "Inter, system-ui, sans-serif" }}>
+      <Sidebar page={page} setPage={setPage} />
+      <main style={{ flex: 1, padding: 32, overflowY: "auto" }}>
+        {page === "dashboard" && <Dashboard accounts={accounts} />}
+        {page === "finance" && <Finance accounts={accounts} />}
+        {page === "accounts" && (
+          <Accounts
+            accounts={accounts}
+            addTransaction={addTransaction}
+            deleteTransaction={deleteTransaction}
+            addAccount={addAccount}
+            updateAccount={updateAccount}
+            deleteAccount={deleteAccount}
+          />
+        )}
+        {page === "cards" && (
+          <Cards
+            cards={cards}
+            accounts={accounts}
+            changeCardNumber={changeCardNumber}
+            changeCardLink={changeCardLink}
+            addCardTransaction={addCardTransaction}
+            deleteCardTransaction={deleteCardTransaction}
+          />
+        )}
+        {page === "expenses" && <Expenses cards={cards} />}
+      </main>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<MKBankApp />);
+
+</script>
+
+<style>
+  @media (max-width: 900px) {
+    .finance-grid, .accounts-grid, .cards-grid, .expenses-grid, .stats-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+</body>
+</html>
